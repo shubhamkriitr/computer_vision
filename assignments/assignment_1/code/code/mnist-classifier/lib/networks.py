@@ -12,10 +12,22 @@ class MLPClassifier(nn.Module):
         # Input is 28 * 28.
         # Output is 10 values (one per class).
         # Multiple linear layers each followed by a ReLU non-linearity (apart from the last).
-        raise  NotImplementedError()
-        self.layers = nn.Sequential(
-            # TODO
-        )
+        num_d = 784
+        mode = "1"
+        if mode == "0":
+            print(f"Using single layer")
+            self.layers = nn.Sequential(
+                nn.Linear(num_d, 10, bias=True, dtype=torch.float32),
+                # nn.Softmax() -- removed as not mentioned in tutorial
+            )
+        else:
+            print(f"Using Multiple layers (MLP)")
+            self.layers = nn.Sequential(
+                nn.Linear(num_d, 32, bias=True, dtype=torch.float32),
+                nn.ReLU(),
+                nn.Linear(32, 10, bias=True, dtype=torch.float32),
+                # nn.Softmax() -- removed as not mentioned in tutorial
+            )
     
     def forward(self, batch):
         # Flatten the batch for MLP.

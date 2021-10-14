@@ -82,8 +82,8 @@ if __name__ == '__main__':
     )
 
     # Create the network.
-    # net = MLPClassifier()
-    net = ConvClassifier()
+    net = MLPClassifier()
+    # net = ConvClassifier()
 
     # Create the optimizer.
     optimizer = Adam(net.parameters())
