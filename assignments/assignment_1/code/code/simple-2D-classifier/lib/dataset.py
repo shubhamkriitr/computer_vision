@@ -5,6 +5,8 @@ import os
 import torch
 from torch.utils.data import Dataset
 
+# extra modules imported
+from pathlib import Path
 
 class Simple2DDataset(Dataset):
     def __init__(self, split='train'):
@@ -15,17 +17,21 @@ class Simple2DDataset(Dataset):
         # Hint: you can use os.path.join to obtain a path in a subfolder.
         # Save samples and annotations to class members self.samples and self.annotations respectively.
         # Samples should be an Nx2 numpy array. Annotations should be Nx1.
-        raise NotImplementedError()
-            
+        root_dir = Path(__file__).parent.parent
+        dataset_path = root_dir.joinpath("data", f"{split}.npz").absolute()
+        dataset_path = str(dataset_path)
+        data = np.load(dataset_path)
+        self.samples = data["samples"]
+        self.annotations = data["annotations"]
+
     def __len__(self):
         # Returns the number of samples in the dataset.
         return self.samples.shape[0]
     
     def __getitem__(self, idx):
         # Returns the sample and annotation with index idx.
-        raise NotImplementedError()
-        sample = None
-        annotation = None
+        sample = self.samples[idx]
+        annotation = self.annotations[idx]
         
         # Convert to tensor.
         return {
