@@ -49,7 +49,12 @@ class Simple2DTransformDataset(Dataset):
         # Hint: you can use os.path.join to obtain a path in a subfolder.
         # Save samples and annotations to class members self.samples and self.annotations respectively.
         # Samples should be an Nx2 numpy array. Annotations should be Nx1.
-        raise NotImplementedError()
+        root_dir = Path(__file__).parent.parent
+        dataset_path = root_dir.joinpath("data", f"{split}.npz").absolute()
+        dataset_path = str(dataset_path)
+        data = np.load(dataset_path)
+        self.samples = data["samples"]
+        self.annotations = data["annotations"]
             
     def __len__(self):
         # Returns the number of samples in the dataset.
@@ -57,9 +62,8 @@ class Simple2DTransformDataset(Dataset):
     
     def __getitem__(self, idx):
         # Returns the sample and annotation with index idx.
-        raise NotImplementedError()
-        sample = None
-        annotation = None
+        sample = self.samples[idx]
+        annotation = self.annotations[idx]
         
         # Transform the sample to a different coordinate system.
         sample = transform(sample)
@@ -72,6 +76,8 @@ class Simple2DTransformDataset(Dataset):
 
 
 def transform(sample):
-    raise NotImplementedError()
-    new_sample = None
+    x1, x2 = sample
+    radius = np.sqrt(x1**2 + x2**2)
+    theta = np.arctan2(x2, x1)
+    new_sample = (radius, theta)
     return new_sample
