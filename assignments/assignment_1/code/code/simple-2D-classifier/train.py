@@ -64,7 +64,7 @@ def run_validation_epoch(net, dataloader):
 if __name__ == '__main__':
     # Create the training dataset and dataloader.
     train_dataset = Simple2DDataset(split='train')
-    # train_dataset = Simple2DTransformDataset(split='train')
+    train_dataset = Simple2DTransformDataset(split='train')
     train_dataloader = DataLoader(
         train_dataset,
         batch_size=BATCH_SIZE,
@@ -74,7 +74,7 @@ if __name__ == '__main__':
     
     # Create the validation dataset and dataloader.
     valid_dataset = Simple2DDataset(split='valid')
-    # valid_dataset = Simple2DTransformDataset(split='valid')
+    valid_dataset = Simple2DTransformDataset(split='valid')
     valid_dataloader = DataLoader(
         valid_dataset,
         batch_size=BATCH_SIZE,

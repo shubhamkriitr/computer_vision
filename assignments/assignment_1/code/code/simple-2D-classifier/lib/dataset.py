@@ -79,5 +79,5 @@ def transform(sample):
     x1, x2 = sample
     radius = np.sqrt(x1**2 + x2**2)
     theta = np.arctan2(x2, x1)
-    new_sample = (radius, theta)
+    new_sample = np.array([radius, theta], dtype=np.float32)
     return new_sample
