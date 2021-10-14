@@ -21,19 +21,21 @@ def run_training_epoch(net, optimizer, dataloader):
     net.train()
     # Loop over batches.
     for batch in tqdm(dataloader):
-        raise NotImplementedError()
         # Reset gradients.
-        # TODO
+        optimizer.zero_grad()
 
         # Forward pass.
-        output = None
+        batch_x = batch["input"]
+        batch_y = batch["annotation"]
+        output = net(batch_x)
 
         # Compute the loss - cross entropy.
         # Documentation https://pytorch.org/docs/stable/generated/torch.nn.functional.cross_entropy.html.
-        loss = None
+        loss = F.cross_entropy(output, batch_y)
 
         # Backwards pass.
-        # TODO
+        loss.backward()
+        optimizer.step()
 
         # Save loss value in the aggregator.
         loss_aggregator.add(loss.item())
