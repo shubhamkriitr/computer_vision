@@ -12,9 +12,8 @@ class LinearClassifier(nn.Module):
         # Input is 2D.
         # Output is a single value.
         # Single linear layer.
-        raise NotImplementedError()
         self.layers = nn.Sequential(
-            # TODO
+            nn.Linear(2, 1, bias=True, dtype=torch.float32)
         )
     
     def forward(self, batch):
