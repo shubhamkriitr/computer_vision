@@ -50,13 +50,22 @@ class ConvClassifier(nn.Module):
         # Needs to end with AdaptiveMaxPool2d(1) to reduce everything to a 1x1 image.
         raise NotImplementedError()
         self.layers = nn.Sequential(
+            nn.Conv2d(1, 8, (3, 3)),
+            nn.ReLU(),
+            nn.MaxPool2d((2, 2), 2),
+
+            nn.Conv2d(8, 16, (3, 3)),
+            nn.ReLU(),
+            nn.MaxPool2d((2, 2), 2),
+
+            nn.Conv2d(16, 32, (3, 3)),
+            nn.ReLU(),
             nn.AdaptiveMaxPool2d(1)
-            # TODO
         )
         # Linear classification layer.
         # Output is 10 values (one per class).
         self.classifier = nn.Sequential(
-            # TODO
+            nn.Linear(10, 10)
         )
     
     def forward(self, batch):
