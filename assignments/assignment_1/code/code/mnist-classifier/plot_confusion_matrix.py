@@ -17,6 +17,26 @@ BATCH_SIZE = 8
 NUM_WORKERS = 4
 
 
+def create_confusion_matrix(net, dataloader):
+    confusion_matrix = np.zeros([10, 10])
+    # Put the network in evaluation mode.
+    net.eval()
+    # Loop over batches.
+    for batch in dataloader:
+        # Forward pass only.
+        output = net(batch['input'])
+        true_labels = batch['annotation']
+
+        predicted_labels = torch.argmax(output, dim=1)
+
+        #update matrix
+        for idx in range(true_labels.shape[0]):
+            true_val = true_labels[idx]
+            pred_val = predicted_labels[idx]
+            confusion_matrix[pred_val.item(), true_val.item()] += 1
+
+    return confusion_matrix
+
 if __name__ == '__main__': 
     # Create the validation dataset and dataloader.
     valid_dataset = MNISTDataset(split='test')
@@ -39,8 +59,8 @@ if __name__ == '__main__':
     optimizer = Adam(net.parameters())
 
     # Based on run_validation_epoch, write code for computing the 10x10 confusion matrix.
-    confusion_matrix = np.zeros([10, 10])
-    raise NotImplementedError()
+    confusion_matrix =  create_confusion_matrix(net, valid_dataloader)
+    
     
     # Plot the confusion_matrix.
     plt.figure(figsize=[5, 5])
