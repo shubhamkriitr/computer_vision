@@ -21,6 +21,7 @@ def create_confusion_matrix(net, dataloader):
     confusion_matrix = np.zeros([10, 10])
     # Put the network in evaluation mode.
     net.eval()
+    # count_dict = {x:0 for x in range(10)}
     # Loop over batches.
     for batch in dataloader:
         # Forward pass only.
@@ -34,6 +35,7 @@ def create_confusion_matrix(net, dataloader):
             true_val = true_labels[idx]
             pred_val = predicted_labels[idx]
             confusion_matrix[pred_val.item(), true_val.item()] += 1
+            # count_dict[true_val.item()] += 1
 
     return confusion_matrix
 
@@ -71,7 +73,5 @@ if __name__ == '__main__':
     plt.ylabel('annotation')
     for i in range(10):
         for j in range(10):
-            # plt.text(i, j, '%d' % (confusion_matrix[i, j]), ha='center', va='center', color='w', fontsize=12.5)
-            # FIX added for axis swap
-            plt.text(i, j, '%d' % (confusion_matrix[j, i]), ha='center', va='center', color='w', fontsize=12.5)
+            plt.text(i, j, '%d' % (confusion_matrix[i, j]), ha='center', va='center', color='w', fontsize=12.5)
     plt.show()
