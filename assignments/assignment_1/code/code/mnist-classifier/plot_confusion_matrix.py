@@ -71,5 +71,7 @@ if __name__ == '__main__':
     plt.ylabel('annotation')
     for i in range(10):
         for j in range(10):
-            plt.text(i, j, '%d' % (confusion_matrix[i, j]), ha='center', va='center', color='w', fontsize=12.5)
+            # plt.text(i, j, '%d' % (confusion_matrix[i, j]), ha='center', va='center', color='w', fontsize=12.5)
+            # FIX added for axis swap
+            plt.text(i, j, '%d' % (confusion_matrix[j, i]), ha='center', va='center', color='w', fontsize=12.5)
     plt.show()
