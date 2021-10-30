@@ -9,17 +9,22 @@ import numpy as np
 from skimage import io, color
 from skimage.transform import rescale
 
+# for batch ops
+import multiprocessing
+
+
 def distance(x, X):
-    raise NotImplementedError('distance function not implemented!')
+    return (X-x).norm(p=2, dim=1)
 
 def distance_batch(x, X):
+    N = multiprocessing.cpu_count()
     raise NotImplementedError('distance_batch function not implemented!')
 
 def gaussian(dist, bandwidth):
-    raise NotImplementedError('gaussian function not implemented!')
+    return torch.exp(-torch.square(dist)/(2*bandwidth*bandwidth))
 
 def update_point(weight, X):
-    raise NotImplementedError('update_point function not implemented!')
+    return (weight*X.T).T.sum(dim=0)/weight.sum()
 
 def update_point_batch(weight, X):
     raise NotImplementedError('update_point_batch function not implemented!')
