@@ -53,7 +53,8 @@ class SegNetLite(nn.Module):
                 nn.BatchNorm2d(num_features=_out_ch)
             )
             layers_pooling.append(
-                nn.MaxPool2d(kernel_size=_pool_k, stride=_pool_s)
+                nn.MaxPool2d(kernel_size=_pool_k, stride=_pool_s,
+                             return_indices=True)
             )
             _in_ch = _out_ch  # for next round
         # Convert Python list to nn.ModuleList, so that PyTorch's autograd
@@ -100,12 +101,35 @@ class SegNetLite(nn.Module):
 
         # Implement a final 1x1 convolution to to get the logits of 11 classes (background + 10 digits)
         final_layer_input_ch = up_filter_sizes[-1]  # last upsampler output dim
-        self.logit_layer = nn.Conv2d(in_channels=32, out_channels=11,
+        self.logit_layer = nn.Conv2d(in_channels=final_layer_input_ch, out_channels=11,
                                      kernel_size=1, padding=0)
 
     def forward(self, x):
-        raise NotImplementedError('Forward function not implemented!')
+        #  TODO: may need to assert size of module lists
+        pooling_indices = []
+        _x = x
+        for conv_layer, bn_layer, pool_layer in \
+                zip(self.layers_conv_down,
+                    self.layers_bn_down, self.layers_pooling):
+            _x = conv_layer(x)
+            _x = bn_layer(x)
+            _x = self.relu(x)
+            _x, _indices = pool_layer(_x)
+            pooling_indices.append(_indices)
 
+        pooling_indices = pooling_indices.reverse()
+
+        for unpool_layer, pool_ind, conv_layer, bn_layer,  in \
+                zip(self.layers_unpooling, pooling_indices,
+                    self.layers_conv_up, self.layers_bn_up):
+            _x = unpool_layer(_x, pool_ind)
+            _x = conv_layer(_x)
+            _x = bn_layer(_x)
+            _x = self.relu(_x)
+
+        _x = self.logit_layer(_x)
+
+        return _x
 
 def get_seg_net(**kwargs):
 
