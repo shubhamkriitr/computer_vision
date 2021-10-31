@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import os
 import logging
+from typing import List, Any
 
 import torch
 import torch.nn as nn
@@ -106,7 +107,7 @@ class SegNetLite(nn.Module):
 
     def forward(self, x):
         #  TODO: may need to assert size of module lists
-        pooling_indices = []
+        pooling_indices: List[torch.Tensor] = []
         _x = x
         for conv_layer, bn_layer, pool_layer in \
                 zip(self.layers_conv_down,
@@ -117,10 +118,8 @@ class SegNetLite(nn.Module):
             _x, _indices = pool_layer(_x)
             pooling_indices.append(_indices)
 
-        pooling_indices = pooling_indices.reverse()
-
         for unpool_layer, pool_ind, conv_layer, bn_layer,  in \
-                zip(self.layers_unpooling, pooling_indices,
+                zip(self.layers_unpooling, pooling_indices.reverse(),
                     self.layers_conv_up, self.layers_bn_up):
             _x = unpool_layer(_x, pool_ind)
             _x = conv_layer(_x)
