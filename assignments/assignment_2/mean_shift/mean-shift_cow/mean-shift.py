@@ -11,6 +11,31 @@ from skimage.transform import rescale
 
 # for batch ops
 import multiprocessing
+from concurrent.futures import ProcessPoolExecutor
+
+NUM_WORKERS = 4
+try:
+    NUM_WORKERS = multiprocessing.cpu_count()
+except Exception as exc:
+    print("Could not get cpu count")
+    print(f"Using {NUM_WORKERS} workers")
+
+def get_batch_indices(begin_, end_, workers):
+    batches = []
+    num_records = end_ - begin_ # end_ is exclusive
+    start = begin_
+    batch_size = num_records//workers
+    spill_over = num_records%workers
+    while start < end_:
+        this_end = start + batch_size
+        if spill_over > 0:
+            this_end += 1
+            spill_over -= 1
+        batches.append([start, this_end])
+        start = this_end
+    if len(batches) > 0 and batches[-1][1] > end_:
+        batches[-1][1] = end_
+    return batches 
 
 
 def distance(x, X):
