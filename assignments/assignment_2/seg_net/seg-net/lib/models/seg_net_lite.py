@@ -74,12 +74,14 @@ class SegNetLite(nn.Module):
         layers_unpooling = []
 
         _in_ch = down_filter_sizes[-1]  # last down sampling layer out channels
-        # NOTE: reversing kernel size/strides - Should be done for paddings
-        # as well
+        # NOTE: reversing kernel size/strides - paddings
+        conv_paddings.reverse()
+        pooling_kernel_sizes.reverse()
+        pooling_strides.reverse()
         for idx, value_set in enumerate(
-                zip(up_filter_sizes, kernel_sizes, conv_paddings.reverse(),
-                    pooling_kernel_sizes.reverse(),
-                    pooling_strides.reverse())):
+                zip(up_filter_sizes, kernel_sizes, conv_paddings,
+                    pooling_kernel_sizes,
+                    pooling_strides)):
             _out_ch, _k, _pad, _unpool_k, _unpool_s = value_set
             layers_unpooling.append(
                 nn.MaxUnpool2d(kernel_size=_unpool_k, stride=_unpool_s)
@@ -118,8 +120,11 @@ class SegNetLite(nn.Module):
             _x, _indices = pool_layer(_x)
             pooling_indices.append(_indices)
 
+        # reverse the order of indices
+        pooling_indices.reverse()
+
         for unpool_layer, pool_ind, conv_layer, bn_layer,  in \
-                zip(self.layers_unpooling, pooling_indices.reverse(),
+                zip(self.layers_unpooling, pooling_indices,
                     self.layers_conv_up, self.layers_bn_up):
             _x = unpool_layer(_x, pool_ind)
             _x = conv_layer(_x)
@@ -135,3 +140,7 @@ def get_seg_net(**kwargs):
     model = SegNetLite(**kwargs)
 
     return model
+
+if __name__ == "__main__":
+    model = SegNetLite()
+    print(model)
