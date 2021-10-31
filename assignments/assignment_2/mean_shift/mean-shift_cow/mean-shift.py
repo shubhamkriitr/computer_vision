@@ -58,6 +58,10 @@ def distance_batch(x, X):
         results.append(sub_result)
     return torch.cat(results, dim=0)
 
+def distance_batch_(x, X):
+    # x = n x d ; X = N x d -> n x N
+    return torch.cdist(x, X)
+
 def gaussian(dist, bandwidth):
     return torch.exp(-torch.square(dist)/(2*bandwidth*bandwidth))
 
@@ -80,6 +84,12 @@ def update_point_batch(weight, X):
     for sub_result in executor.map(_update_point_nodiv, args_arr):
         running_sum += sub_result
     return running_sum/wt_sum
+
+def update_point_batch_(weight, X):
+    wt_sum = weight.sum(axis=1)
+    weighted_sum = torch.matmul(weight, X)
+    return weighted_sum/torch.unsqueeze(wt_sum, dim=1)
+
 
 def meanshift_step(X, bandwidth=2.5):
     X_ = X.clone()
@@ -112,13 +122,23 @@ def meanshift_step_batch(X, bandwidth=2.5):
     
     return torch.cat(X_)
 
+def meanshift_step_batch_(X, bandwidth=2.5):
+    dist = distance_batch_(X, X)
+    wt = gaussian(dist, bandwidth)
+    X_ = update_point_batch_(wt, X)
+    return X_
+
+
+
 
 def meanshift(X):
     X = X.clone()
     for _ in range(20):
         # X = meanshift_step(X)   # slow implementation
         print(f"Using {NUM_WORKERS} workers")
-        X = meanshift_step_batch(X)   # fast implementation
+        # X = meanshift_step_batch(X)   # fast implementation
+        X = meanshift_step_batch_(X)   # fast implementation
+        
         # 
     return X
 
