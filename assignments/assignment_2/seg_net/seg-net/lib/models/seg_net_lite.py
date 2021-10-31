@@ -114,9 +114,9 @@ class SegNetLite(nn.Module):
         for conv_layer, bn_layer, pool_layer in \
                 zip(self.layers_conv_down,
                     self.layers_bn_down, self.layers_pooling):
-            _x = conv_layer(x)
-            _x = bn_layer(x)
-            _x = self.relu(x)
+            _x = conv_layer(_x)
+            _x = bn_layer(_x)
+            _x = self.relu(_x)
             _x, _indices = pool_layer(_x)
             pooling_indices.append(_indices)
 
