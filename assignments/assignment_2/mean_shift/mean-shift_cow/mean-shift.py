@@ -18,7 +18,6 @@ try:
     NUM_WORKERS = multiprocessing.cpu_count()
 except Exception as exc:
     print("Could not get cpu count")
-    print(f"Using {NUM_WORKERS} workers")
 
 def get_batch_indices(begin_, end_, workers):
     batches = []
@@ -41,9 +40,18 @@ def get_batch_indices(begin_, end_, workers):
 def distance(x, X):
     return (X-x).norm(p=2, dim=1)
 
+
+def _distance_batch(args):
+    return distance(args[0], args[1])
+
 def distance_batch(x, X):
-    N = multiprocessing.cpu_count()
-    raise NotImplementedError('distance_batch function not implemented!')
+    batch_idx = get_batch_indices(0, X.shape[0], NUM_WORKERS)
+    args_arr = [(x, X[start_:end_]) for start_, end_ in batch_idx]
+    results = []
+    with ProcessPoolExecutor(max_workers=NUM_WORKERS) as executor:
+        for sub_result in executor.map(_distance_batch, args_arr):
+            results.append(sub_result)
+    return torch.cat(results, dim=0)
 
 def gaussian(dist, bandwidth):
     return torch.exp(-torch.square(dist)/(2*bandwidth*bandwidth))
@@ -51,8 +59,20 @@ def gaussian(dist, bandwidth):
 def update_point(weight, X):
     return (weight*X.T).T.sum(dim=0)/weight.sum()
 
+
+def _update_point_nodiv(args):
+    return (args[0]*args[1].T).T.sum(dim=0)
+
 def update_point_batch(weight, X):
-    raise NotImplementedError('update_point_batch function not implemented!')
+    wt_sum = weight.sum()
+    running_sum = 0
+    batch_idx = get_batch_indices(0, X.shape[0], NUM_WORKERS)
+    args_arr = [(weight[start_:end_], X[start_:end_]) for start_, end_ in batch_idx]
+    results = []
+    with ProcessPoolExecutor(max_workers=NUM_WORKERS) as executor:
+        for sub_result in executor.map(_update_point_nodiv, args_arr):
+            running_sum += sub_result
+    return running_sum/wt_sum
 
 def meanshift_step(X, bandwidth=2.5):
     X_ = X.clone()
@@ -63,13 +83,20 @@ def meanshift_step(X, bandwidth=2.5):
     return X_
 
 def meanshift_step_batch(X, bandwidth=2.5):
-    raise NotImplementedError('meanshift_step_batch function not implemented!')
+    X_ = X.clone()
+    for i, x in enumerate(X):
+        dist = distance_batch(x, X)
+        weight = gaussian(dist, bandwidth)
+        X_[i] = update_point_batch(weight, X)
+    return X_
 
 def meanshift(X):
     X = X.clone()
     for _ in range(20):
         X = meanshift_step(X)   # slow implementation
+        # print(f"Using {NUM_WORKERS} workers")
         # X = meanshift_step_batch(X)   # fast implementation
+        # 
     return X
 
 scale = 0.25    # downscale the image to run faster
