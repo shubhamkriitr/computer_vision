@@ -21,7 +21,7 @@ np.random.seed(0)
 def distance(x, X):
     return (X-x).norm(p=2, dim=1)
 
-def distance_batch_(x, X):
+def distance_batch(x, X):
     # x = n x d ; X = N x d -> n x N
     return torch.cdist(x, X)
 
@@ -31,7 +31,7 @@ def gaussian(dist, bandwidth):
 def update_point(weight, X):
     return (weight*X.T).T.sum(dim=0)/weight.sum()
 
-def update_point_batch_(weight, X):
+def update_point_batch(weight, X):
     wt_sum = weight.sum(axis=1)
     weighted_sum = torch.matmul(weight, X)
     return weighted_sum/torch.unsqueeze(wt_sum, dim=1)
@@ -46,10 +46,10 @@ def meanshift_step(X, bandwidth=2.5):
     return X_
 
 
-def meanshift_step_batch_(X, bandwidth=2.5):
-    dist = distance_batch_(X, X)
+def meanshift_step_batch(X, bandwidth=2.5):
+    dist = distance_batch(X, X)
     wt = gaussian(dist, bandwidth)
-    X_ = update_point_batch_(wt, X)
+    X_ = update_point_batch(wt, X)
     return X_
 
 
@@ -58,9 +58,9 @@ def meanshift_step_batch_(X, bandwidth=2.5):
 def meanshift(X):
     X = X.clone()
     for _ in range(20):
-        X = meanshift_step(X)   # slow implementation
+        # X = meanshift_step(X)   # slow implementation
         # X = meanshift_step_batch(X)   # fast implementation
-        # X = meanshift_step_batch_(X)   # fast implementation
+        X = meanshift_step_batch(X)   # fast implementation
         
         # 
     return X
