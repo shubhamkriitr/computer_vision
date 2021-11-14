@@ -15,8 +15,17 @@ def EstimateEssentialMatrix(K, im1, im2, matches):
   # Normalize coordinates (to points on the normalized image plane)
 
   # These are the keypoints on the normalized image plane (not to be confused with the normalization in the calibration exercise)
-  normalized_kps1 = None
-  normalized_kps2 = None
+  # 
+  # FIXME should im1 be normalized before normalizing using K inv
+
+  K_inv = np.linalg.inv(K)
+  IM_KP_1 = np.ones((im1.kps.shape[0], 3))
+  IM_KP_2 = np.ones((im2.kps.shape[0], 3))
+  IM_KP_1[:, 0:2] = im1.kps
+  IM_KP_2[:, 0:2] = im2.kps
+
+  normalized_kps2 = K_inv @ IM_KP_2
+  normalized_kps1 = K_inv @ IM_KP_1
 
   # TODO
   # Assemble constraint matrix
@@ -25,6 +34,28 @@ def EstimateEssentialMatrix(K, im1, im2, matches):
   for i in range(matches.shape[0]):
     # TODO
     # Add the constraints
+    x_im = normalized_kps2[matches[i][0]]
+    x_im_dash = normalized_kps2[matches[i][1]]
+
+    x_im = x_im/x_im[2]
+    x_im_dash = x_im_dash/x_im_dash[2]
+
+    x = x_im[0]
+    y = x_im[1]
+    x_dash = x_im_dash[0]
+    y_dash = x_im_dash[1]
+
+    constraint_matrix[i, 0] = x_dash*x
+    constraint_matrix[i, 1] = x_dash*y
+    constraint_matrix[i, 2] = x_dash
+    constraint_matrix[i, 3] = y_dash*x
+    constraint_matrix[i, 4] = y_dash*y
+    constraint_matrix[i, 5] = y_dash
+    constraint_matrix[i, 6] = x
+    constraint_matrix[i, 7] = y
+    constraint_matrix[i, 8] = 1
+
+
     pass  # ADD CODE HERE FIXME
 
   
