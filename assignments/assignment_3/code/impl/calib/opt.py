@@ -13,9 +13,12 @@ def ReprojectionError(P, point3D, point2D):
 
     x_dash = P @ X
     x_dash = x_dash/x_dash[2]
-    d_wi = np.linalg.norm(x - x_dash)
+    # d_wi = np.linalg.norm(x - x_dash) - only diff needs to be sent
+    # as norm and squaring is done in OptimizeProjectionMatrix function
+    err = x - x_dash
 
-    return d_wi*d_wi
+    err = err[0:2] # remove last dim
+    return err
 
 # Compute the residuals for all correspondences of the image
 def ImageResiduals(P, points2D, points3D):

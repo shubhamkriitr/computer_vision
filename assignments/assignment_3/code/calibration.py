@@ -38,6 +38,9 @@ def main():
   P_hat = EstimateProjectionMatrix(normalized_points2D, normalized_points3D)
 
   # TODO
+
+
+  print(f'Reprojection error before optimization: {np.linalg.norm(ImageResiduals(P_hat, normalized_points2D, normalized_points3D))**2}')
   # Optimize based on reprojection error
   P_hat_opt = OptimizeProjectionMatrix(P_hat, normalized_points2D, normalized_points3D)
 
