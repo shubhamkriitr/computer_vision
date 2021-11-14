@@ -72,13 +72,16 @@ def DecomposeP(P):
   K = np.linalg.inv(K_inv)
   R = np.linalg.inv(R_inv) # R_inv transpose should also workk
 
+  # Adjust Ks diagonal signs and transform R accordingly
+  T = np.diag(np.sign(np.diag(K)))
+  K = K @ T
+  R = np.linalg.inv(T) @ R
+
   det_R = np.linalg.det(R)
   print(f">>>: det_R = {det_R}")
   if det_R < 0:
     R = -R
 
-  if K[0, 0 ] < 0:
-    K = -K
 
   # TODO
   # It is possible that a sign was assigned to the wrong matrix during decomposition
