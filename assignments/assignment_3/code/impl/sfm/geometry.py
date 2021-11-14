@@ -24,8 +24,8 @@ def EstimateEssentialMatrix(K, im1, im2, matches):
   IM_KP_1[:, 0:2] = im1.kps
   IM_KP_2[:, 0:2] = im2.kps
 
-  normalized_kps2 = K_inv @ IM_KP_2
-  normalized_kps1 = K_inv @ IM_KP_1
+  normalized_kps2 = np.transpose(K_inv @ np.transpose(IM_KP_2))
+  normalized_kps1 = np.transpose(K_inv @ np.transpose(IM_KP_1))
 
   # TODO
   # Assemble constraint matrix
@@ -34,8 +34,9 @@ def EstimateEssentialMatrix(K, im1, im2, matches):
   for i in range(matches.shape[0]):
     # TODO
     # Add the constraints
-    x_im = normalized_kps2[matches[i][0]]
-    x_im_dash = normalized_kps2[matches[i][1]]
+    # NOTE kp1' @ E kp2 = 0 for this choice of x and x_dash
+    x_im = normalized_kps2[matches[i][1]]
+    x_im_dash = normalized_kps1[matches[i][0]]
 
     x_im = x_im/x_im[2]
     x_im_dash = x_im_dash/x_im_dash[2]
@@ -65,13 +66,19 @@ def EstimateEssentialMatrix(K, im1, im2, matches):
 
   # TODO
   # Reshape the vectorized matrix to it's proper shape again
-  E_hat = None
+  E_hat = vectorized_E_hat.reshape(3, 3)
 
   # TODO
   # We need to fulfill the internal constraints of E
   # The first two singular values need to be equal, the third one zero.
   # Since E is up to scale, we can choose the two equal singluar values arbitrarily
-  E = None
+  U, D_hat, Vh = np.linalg.svd(E_hat)
+
+  #choose new D
+  avg_val = (D_hat[0] + D_hat[1])/2.0
+  D = np.diag(np.array([avg_val, avg_val, 0], dtype=E_hat.dtype))
+  
+  E = U @ D @ Vh
 
   # This is just a quick test that should tell you if your estimated matrix is not correct
   # It might fail if you estimated E in the other direction (i.e. kp2' * E * kp1)
