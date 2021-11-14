@@ -43,18 +43,19 @@ def main():
 
   # Visualize images and features
   # You can comment these lines once you verified that the images are loaded correctly
+  VISUALIZE = False
+  if VISUALIZE:
+    # Show the images
+    PlotImages(images)
 
-  # Show the images
-  PlotImages(images)
+    # Show the keypoints
+    for image_name in image_names:
+      PlotWithKeypoints(images[image_name])
 
-  # Show the keypoints
-  for image_name in image_names:
-    PlotWithKeypoints(images[image_name])
-
-  # Show the feature matches
-  for image_pair in itertools.combinations(image_names, 2):
-    PlotImagePairMatches(images[image_pair[0]], images[image_pair[1]], matches[(image_pair[0], image_pair[1])])
-    gc.collect()
+    # Show the feature matches
+    for image_pair in itertools.combinations(image_names, 2):
+      PlotImagePairMatches(images[image_pair[0]], images[image_pair[1]], matches[(image_pair[0], image_pair[1])])
+      gc.collect()
   
   e_im1_name = image_names[init_images[0]]
   e_im2_name = image_names[init_images[1]]

@@ -25,6 +25,7 @@ def EstimateEssentialMatrix(K, im1, im2, matches):
   for i in range(matches.shape[0]):
     # TODO
     # Add the constraints
+    pass  # ADD CODE HERE FIXME
 
   
   # Solve for the nullspace of the constraint matrix
