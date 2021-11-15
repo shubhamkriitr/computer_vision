@@ -217,7 +217,10 @@ def EstimateImagePose(points2D, points3D, K):
   # We use points in the normalized image plane.
   # This removes the 'K' factor from the projection matrix.
   # We don't normalize the 3D points here to keep the code simpler.
-  normalized_points2D = np.transpose(np.linalg.inv(K) @ np.transpose(points2D))
+  homogeneous_points2D = np.ones((points2D.shape[0], 3), dtype=points2D.dtype)
+  homogeneous_points2D[:, 0:2] = points2D
+  normalized_points2D = np.transpose(np.linalg.inv(K) @ np.transpose(homogeneous_points2D))
+  # FIXME NOTE: make sure above calc is correct
 
   constraint_matrix = BuildProjectionConstraintMatrix(normalized_points2D, points3D)
 
@@ -255,6 +258,23 @@ def TriangulateImage(K, image_name, images, registered_images, matches):
   # You can save the correspondences for each image in a dict and refer to the `local` new point indices here.
   # Afterwards you just add the index offset before adding the correspondences to the images.
   corrs = {}
+
+  image_1_processed_index_set = set()
+  for image_2 in registered_images:
+    e_matches = GetPairMatches(image_name, image_2.name, matches)
+    new_matches = np.zeros((0, 2), dtype=int)
+
+    for i in range(len(e_matches)):
+      image_1_cp_idx = e_matches[i, 0]  # image 1 corresponding pt index
+      if image_1_cp_idx in image_1_processed_index_set:
+        continue  # skipping this one - as already processed
+      
+      p3d_idx1 = image.GetPoint3DIdx(image_1_cp_idx)
+      p3d_idx2 = image_2.GetPoint3DIdx(e_matches[i, 1])
+      if p3d_idx1 == -1 and p3d_idx2 == -1:
+        new_matches = np.append(new_matches, e_matches[[i]], 0) 
+
+    # FIXME CONTINUE NOTE: start from Here tomorrow
 
 
 
