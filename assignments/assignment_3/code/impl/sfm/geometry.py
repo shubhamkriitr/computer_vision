@@ -75,7 +75,8 @@ def EstimateEssentialMatrix(K, im1, im2, matches):
   U, D_hat, Vh = np.linalg.svd(E_hat)
 
   #choose new D
-  avg_val = (D_hat[0] + D_hat[1])/2.0
+  # Since E is up to scale, you can just set the first singular values to 1
+  avg_val = (D_hat[0] + D_hat[1])/2.0 
   D = np.diag(np.array([avg_val, avg_val, 0], dtype=E_hat.dtype))
   
   E = U @ D @ Vh
@@ -173,9 +174,40 @@ def TriangulatePoints(K, im1, im2, matches):
   # TODO
   # Filter points behind the cameras by transforming them into each camera space and checking the depth (Z)
   # Make sure to also remove the corresponding rows in `im1_corrs` and `im2_corrs`
-  points3D = None
-  im1_corrs = None
-  im2_corrs = None
+  # FIXME NOTE add optimized version later
+  filtered_points3D = []
+  filtered_im1_corrs = []
+  filtered_im2_corrs = []
+  M_1 = P1[:, 0:3] # M = KR
+  M_2 = P2[:, 0:3] # M = KR
+  sign_det_M_1 = np.sign(np.linalg.det(M_1))
+  sign_det_M_2 = np.sign(np.linalg.det(M_2))
+  for i in range(num_new_matches):
+    homogeneous_point = np.append(points3D[i], 1)
+    homogeneous_point = np.reshape(homogeneous_point, (4,1))
+    x_cam_1 = P1 @ homogeneous_point
+    is_valid = True
+
+    if sign_det_M_1*x_cam_1[2] < 0:
+      is_valid = False
+
+    if is_valid:
+      # check 2nd camera
+      x_cam_2 = P2 @ homogeneous_point
+      if sign_det_M_2*x_cam_2[2] < 0:
+        is_valid = False
+    
+    if not is_valid:
+      continue
+
+    filtered_points3D.append(points3D[i])
+    filtered_im1_corrs.append(im1_corrs[i])
+    filtered_im2_corrs.append(im2_corrs[i])
+
+
+  points3D = np.array(filtered_points3D, dtype=points3D.dtype)
+  im1_corrs = np.array(filtered_im1_corrs, dtype=im1_corrs.dtype)
+  im2_corrs = np.array(filtered_im2_corrs, dtype=im2_corrs.dtype)
 
   return points3D, im1_corrs, im2_corrs
 
@@ -185,7 +217,7 @@ def EstimateImagePose(points2D, points3D, K):
   # We use points in the normalized image plane.
   # This removes the 'K' factor from the projection matrix.
   # We don't normalize the 3D points here to keep the code simpler.
-  normalized_points2D = None
+  normalized_points2D = np.transpose(np.linalg.inv(K) @ np.transpose(points2D))
 
   constraint_matrix = BuildProjectionConstraintMatrix(normalized_points2D, points3D)
 

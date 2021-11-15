@@ -75,11 +75,36 @@ def main():
   # For each possible relative pose, try to triangulate points.
   # We can assume that the correct solution is the one that gives the most points in front of both cameras
   # Be careful not to set the transformation in the wrong direction
+  R_identity = np.eye(3, dtype=E.dtype)
+  t_origin = np.zeros(3, dtype=E.dtype)
 
+  valid_case_count_map = {i:0 for i in range(len(possible_relative_poses))}
+
+  for pose_number, current_pose in enumerate(possible_relative_poses):
+    _R, _t_hat = current_pose
+    # _P = K @ np.hstack(_R, _t_hat)
+    e_im1.SetPose(_R, _t_hat)
+    e_im2.SetPose(R_identity, t_origin)
+
+    _e_points3D, _e_im1_corrs, _e_im2_corrs = TriangulatePoints(K, e_im1, e_im2, e_matches)
+    valid_case_count_map[pose_number] = _e_points3D.shape[0]
+
+  max_num_of_valid_points = 0
+  best_pose_index = 0
+  for idx, point_count in valid_case_count_map.items():
+    if point_count > max_num_of_valid_points:
+      max_num_of_valid_points = point_count
+      best_pose_index = idx
+  
+  best_R, best_t_hat = possible_relative_poses[best_pose_index]
+
+  
 
   # TODO
   # Set the image poses in the images (image.SetPose(...))
-
+  # set final pose
+  e_im1.SetPose(best_R, best_t_hat)
+  e_im2.SetPose(R_identity, t_origin)
 
   # TODO Triangulate initial points
   points3D, im1_corrs, im2_corrs = TriangulatePoints(K, e_im1, e_im2, e_matches)
