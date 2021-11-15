@@ -260,9 +260,12 @@ def TriangulateImage(K, image_name, images, registered_images, matches):
   corrs = {}
 
   image_1_processed_index_set = set()
-  for image_2 in registered_images:
+  local_index_offset = 0 # update it as pointts3D grows in size after every loop execution
+  for reg_image_name in registered_images:
+    image_2 = images[reg_image_name]
     e_matches = GetPairMatches(image_name, image_2.name, matches)
     new_matches = np.zeros((0, 2), dtype=int)
+    # new matches for image_1 and current selected registered image
 
     for i in range(len(e_matches)):
       image_1_cp_idx = e_matches[i, 0]  # image 1 corresponding pt index
@@ -272,11 +275,41 @@ def TriangulateImage(K, image_name, images, registered_images, matches):
       p3d_idx1 = image.GetPoint3DIdx(image_1_cp_idx)
       p3d_idx2 = image_2.GetPoint3DIdx(e_matches[i, 1])
       if p3d_idx1 == -1 and p3d_idx2 == -1:
-        new_matches = np.append(new_matches, e_matches[[i]], 0) 
+        new_matches = np.append(new_matches, e_matches[[i]], 0)
+    
+    # pass these new matches for trianulation
+    new_points3D, new_img1_corrs, new_img2_corrs = TriangulatePoints(K, image, image_2, new_matches)
+    corrs = _update_corrs_dict(corrs, image.name, new_img1_corrs, local_index_offset)
+    corrs = _update_corrs_dict(corrs, image_2.name, new_img2_corrs, local_index_offset)
+
+    local_index_offset += new_points3D.shape[0]
+    points3D = np.concatenate([points3D, new_points3D])
+
+    assert points3D.shape[0] == local_index_offset
+
+
+
 
     # FIXME CONTINUE NOTE: start from Here tomorrow
 
 
 
   return points3D, corrs
+
+def _update_corrs_dict(corrs_dict, image_name, new_img_corrs, index_offset):
+  if image_name not in corrs_dict:
+    corrs_dict[image_name] = {
+      "image_pt_idx": np.zeros((0,), dtype=int),
+      "3d_pt_idx": []
+    }
+  # asssert in the caller that len(new_img_corrs) is same as new 3d points added
+  # new_img_corrs is a 1D array
+  new_3d_pt_idx = list(range(index_offset, index_offset+len(new_img_corrs)))
+
+  corrs_dict[image_name]["image_pt_idx"] \
+    = np.append(corrs_dict[image_name]["image_pt_idx"], new_img_corrs, 0)
+
+  corrs_dict[image_name]["3d_pt_idx"].extend(new_3d_pt_idx)
+
+  return corrs_dict
   
