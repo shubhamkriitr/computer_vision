@@ -284,6 +284,10 @@ def TriangulateImage(K, image_name, images, registered_images, matches):
 
     local_index_offset += new_points3D.shape[0]
     points3D = np.concatenate([points3D, new_points3D])
+    for _i in range(new_img1_corrs.shape[0]):
+      # image_1_processed_index_set.add(new_img1_corrs[_i])
+      # FIXME
+      pass
 
     assert points3D.shape[0] == local_index_offset
 
