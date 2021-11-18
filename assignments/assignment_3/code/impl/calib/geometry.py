@@ -49,7 +49,9 @@ def EstimateProjectionMatrix(points2D, points3D):
   P_vec = vh[-1,:]
 
   # TODO: Reshape the vector to a matrix (pay attention to the order)
-  P = np.stack((P_vec[i*4:i*4+4] for i in range(3)))
+  # To avoid: FutureWarning: arrays to stack must be passed as a "sequence"
+  list_of_P_rows = list((P_vec[i*4:i*4+4] for i in range(3)))
+  P = np.stack(list_of_P_rows)
 
   return P
 
