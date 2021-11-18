@@ -279,6 +279,9 @@ def TriangulateImage(K, image_name, images, registered_images, matches):
     
     # pass these new matches for trianulation
     new_points3D, new_img1_corrs, new_img2_corrs = TriangulatePoints(K, image, image_2, new_matches)
+    if new_points3D.shape[0] == 0:
+      # print("-")
+      continue
     corrs = _update_corrs_dict(corrs, image.name, new_img1_corrs, local_index_offset)
     corrs = _update_corrs_dict(corrs, image_2.name, new_img2_corrs, local_index_offset)
 

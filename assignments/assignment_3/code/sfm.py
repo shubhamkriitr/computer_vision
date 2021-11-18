@@ -39,7 +39,7 @@ def main():
 
   K = ReadKMatrix(data_folder)
 
-  init_images = [1,4]
+  init_images = [5, 6]
 
   # Visualize images and features
   # You can comment these lines once you verified that the images are loaded correctly
