@@ -5,10 +5,20 @@ from PIL import Image
 
 def read_cam_file(filename):
     # TODO
+    intrinsics, extrinsics, depth_min, depth_max = None, None, None
     return intrinsics, extrinsics, depth_min, depth_max
 
 def read_img(filename):
-    # TODO
+    # TODO:A
+    # FIXME - Should we use global stats to normalize ?
+
+    # filename is actually path
+    np_img = None
+
+    im = Image.open(filename, "r")
+    np_img = np.asarray(im)
+    
+    np_img = np_img/255  # image is in uint8
     return np_img
 
 def read_depth(filename):
@@ -81,3 +91,9 @@ def save_pfm(filename, image, scale=1):
 
     image.tofile(file)
     file.close()
+
+
+if __name__ == "__main__":
+    im_path = "/home/shubham/Documents/Krishna/ETH/cv/computer_vision/assignments/assignment_4/res/rect_001_0_r5000.png"
+
+    read_img(im_path)
