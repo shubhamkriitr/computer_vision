@@ -38,8 +38,12 @@ class FeatureNet(nn.Module):
 
     def forward(self, x):
         # x: [B,3,H,W]
-        # TODO
-        pass
+        # TODO:A
+        out_ = x
+        for layer in self.module_list:
+            out_ = layer(out_)
+        
+        return out_
 
 
 class SimlarityRegNet(nn.Module):
@@ -104,4 +108,3 @@ def mvs_loss(depth_est, depth_gt, mask):
 if __name__ == "__main__":
     net = FeatureNet()
     print(net)
-    
