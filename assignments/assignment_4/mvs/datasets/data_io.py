@@ -19,7 +19,7 @@ def read_img(filename):
     np_img = np.asarray(im)
     
     np_img = np_img/255  # image is in uint8
-    return np_img
+    return np_img.astype(np.float32)
 
 def read_depth(filename):
     # read pfm depth file
@@ -96,4 +96,12 @@ def save_pfm(filename, image, scale=1):
 if __name__ == "__main__":
     im_path = "/home/shubham/Documents/Krishna/ETH/cv/computer_vision/assignments/assignment_4/res/rect_001_0_r5000.png"
 
-    read_img(im_path)
+    im_arr = read_img(im_path)
+
+    from matplotlib import pyplot as plt
+
+    fig = plt.figure()
+    plt.imshow(im_arr[:, :, 0])
+    plt.show()
+
+    print("Done")
