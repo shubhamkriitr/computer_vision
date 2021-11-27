@@ -9,13 +9,32 @@ def least_square(x,y):
 	# TODO
 	# return the least-squares solution
 	# you can use np.linalg.lstsq
+	A = np.vstack((x, np.ones_like(x))).T
+	k, b = np.linalg.lstsq(A, y)[0]
+	
+
+	k, b 
+	# import matplotlib.pyplot as plt
+	# _ = plt.plot(x, y, 'o', label='Original data', markersize=10)
+	# _ = plt.plot(x, k*x + b, 'r', label='Fitted line')
+	# _ = plt.legend()
+	# plt.show()
+
+
 	return k, b
+
 
 def num_inlier(x,y,k,b,n_samples,thres_dist):
 	# TODO
 	# compute the number of inliers and a mask that denotes the indices of inliers
 	num = 0
 	mask = np.zeros(x.shape, dtype=bool)
+
+	perp_dist = np.abs(k*x + b - y)/np.sqrt(k*k + 1)
+
+	mask = perp_dist < thres_dist
+
+	num = np.sum(mask)
 
 	return num, mask
 
@@ -26,6 +45,19 @@ def ransac(x,y,iter,n_samples,thres_dist,num_subset):
 	b_ransac = None
 	inlier_mask = None
 	best_inliers = 0
+
+	
+
+	for iter_idx in range(iter):
+		sample_idx = random.sample(range(x.shape[0]), num_subset)
+		k, b = least_square(x[sample_idx], y[sample_idx])
+		num, mask = num_inlier(x, y, k, b, n_samples, thres_dist)
+		if num > best_inliers:
+			best_inliers = num
+			inlier_mask = mask
+			k_ransac = k
+			b_ransac = b
+
 
 	return k_ransac, b_ransac, inlier_mask
 
