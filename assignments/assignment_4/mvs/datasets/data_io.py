@@ -3,9 +3,40 @@ import re
 import sys
 from PIL import Image
 
+GLOBAL_DATA_TYPE = np.float32
+
 def read_cam_file(filename):
     # TODO
-    intrinsics, extrinsics, depth_min, depth_max = None, None, None
+    intrinsics, extrinsics, depth_min, depth_max = None, None, None, None
+    lines = []
+    with open(filename, "r") as f:
+        lines = f.readlines()
+    
+    lines = [l for l in lines if l.strip() != ""]
+
+    if len(lines) != 10:
+        raise AssertionError("The cam file should have exactly 10 non-empty lines")
+    
+    offset = 1
+    # load extrinsic
+    extrinsics = []
+    for i in range(4):
+        row_ = [float(x) for x in lines[offset + i].split()]
+        extrinsics.append(row_)
+    
+    extrinsics = np.array(extrinsics, dtype=GLOBAL_DATA_TYPE)
+
+    offset = 6
+
+    intrinsics = []
+    for i in range(3):
+        row_ = [float(x) for x in lines[offset + i].split()]
+        intrinsics.append(row_)
+    
+    intrinsics = np.array(intrinsics, dtype=GLOBAL_DATA_TYPE)
+
+    depth_min, depth_max = [float(x) for x in lines[9].split()]
+
     return intrinsics, extrinsics, depth_min, depth_max
 
 def read_img(filename):
@@ -19,7 +50,7 @@ def read_img(filename):
     np_img = np.asarray(im)
     
     np_img = np_img/255  # image is in uint8
-    return np_img.astype(np.float32)
+    return np_img.astype(GLOBAL_DATA_TYPE)
 
 def read_depth(filename):
     # read pfm depth file
@@ -96,6 +127,15 @@ def save_pfm(filename, image, scale=1):
 if __name__ == "__main__":
     im_path = "/home/shubham/Documents/Krishna/ETH/cv/computer_vision/assignments/assignment_4/res/rect_001_0_r5000.png"
 
+    cam_paths = ["/home/shubham/Documents/Krishna/ETH/cv/computer_vision/assignments/assignment_4/res/0000000{}_cam.txt".format(i)
+                for i in range(6)
+                ]
+    
+    cam_data = []
+    for cam_path in cam_paths:
+        data = read_cam_file(cam_path)
+        cam_data.append(data)
+
     im_arr = read_img(im_path)
 
     from matplotlib import pyplot as plt
@@ -105,3 +145,5 @@ if __name__ == "__main__":
     plt.show()
 
     print("Done")
+
+
