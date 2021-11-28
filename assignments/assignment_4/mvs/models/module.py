@@ -11,26 +11,26 @@ class FeatureNet(nn.Module):
 
         configuration_ = [
             # filter, stride, in_channels, out_channels
-            ((3, 3), 1, 3, 8),
-            ((3, 3), 1, 8, 8),
-            ((5, 5), 2, 8, 16),
-            ((3, 3), 1, 16, 16),
-            ((3, 3), 1, 16, 16),
-            ((5, 5), 2, 16, 32),
-            ((3, 3), 1, 32, 32),
-            ((3, 3), 1, 32, 32)
+            ((3, 3), 1, 3, 8, (1, 1)),
+            ((3, 3), 1, 8, 8, (1, 1)),
+            ((5, 5), 2, 8, 16, (2, 2)),
+            ((3, 3), 1, 16, 16, (1, 1)),
+            ((3, 3), 1, 16, 16, (1, 1)),
+            ((5, 5), 2, 16, 32, (2, 2)),
+            ((3, 3), 1, 32, 32, (1, 1)),
+            ((3, 3), 1, 32, 32, (1, 1))
         ]
 
         for conf in configuration_:
-            filter_, stride_, in_channnels_, out_channels_ = conf
+            filter_, stride_, in_channnels_, out_channels_, padding_ = conf
             conv_layer =  nn.Conv2d(in_channels=in_channnels_, out_channels=out_channels_,
-                kernel_size=filter_, stride=stride_)
+                kernel_size=filter_, stride=stride_, padding=padding_)
             bn_layer = nn.BatchNorm2d(num_features=out_channels_)
             relu_layer = nn.ReLU()
             for layer in [conv_layer, bn_layer, relu_layer]:
                 extraction_layers.append(layer)
 
-        final_conv_layer = nn.Conv2d(32, 32, (3, 3), 1)
+        final_conv_layer = nn.Conv2d(32, 32, (3, 3), 1, padding=(1,1))
         extraction_layers.append(final_conv_layer)
 
         self.module_list = nn.ModuleList(extraction_layers)
