@@ -190,7 +190,10 @@ def depth_regression(p, depth_values):
     # p: probability volume [B, D, H, W]
     # depth_values: discrete depth values [B, D]
     # TODO
-    pass
+    d = depth_values.unsqueeze(dim=2).unsqueeze(dim=3)
+    prob_wtd_depth = d*p
+    depth_map = torch.sum(prob_wtd_depth, dim=1)
+    return depth_map
 
 def mvs_loss(depth_est, depth_gt, mask):
     # depth_est: [B,1,H,W]
