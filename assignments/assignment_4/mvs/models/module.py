@@ -189,11 +189,8 @@ def group_wise_correlation(ref_fea, warped_src_fea, G):
 def depth_regression(p, depth_values):
     # p: probability volume [B, D, H, W]
     # depth_values: discrete depth values [B, D]
-    # TODO
-    if len(depth_values.shape) == 1:
-        depth_values = depth_values.unsqueeze(dim=0) 
-        #https://moodle-app2.let.ethz.ch/mod/forum/discuss.php?d=91877
-        # FIXME
+    # TODO:A
+    
     d = depth_values.unsqueeze(dim=2).unsqueeze(dim=3)
     prob_wtd_depth = d*p
     depth_map = torch.sum(prob_wtd_depth, dim=1)
