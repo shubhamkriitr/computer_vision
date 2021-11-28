@@ -66,6 +66,7 @@ def warping(src_fea, src_proj, ref_proj, depth_values):
     # out: [B, C, D, H, W]
     B,C,H,W = src_fea.size()
     D = depth_values.size(1)
+    warped_src_fea = None
     # compute the warped positions with depth values
     with torch.no_grad():
         # relative transformation from reference to source view
@@ -76,11 +77,48 @@ def warping(src_fea, src_proj, ref_proj, depth_values):
                                torch.arange(0, W, dtype=torch.float32, device=src_fea.device)])
         y, x = y.contiguous(), x.contiguous()
         y, x = y.view(H * W), x.view(H * W)
-        # TODO
+        
+        det_M_sign = torch.sign(torch.det(rot).unsqueeze(dim=1)) # B x 1
+        norm_m_3 = torch.norm(rot[:, 2, :], p=2, dim=1).unsqueeze(dim=1) # B x1
+        w = det_M_sign*norm_m_3*depth_values # B x D
+
+        # Create (x, y, 1)^T
+
+        one_col = torch.ones_like(x)
+        x_hom = torch.cat([x.unsqueeze(dim=1),  # H*W x 3
+                        y.unsqueeze(dim=1),
+                        one_col.unsqueeze(dim=1)], dim=1)
+        Xw = w.view(B, D, 1, 1)*x_hom.unsqueeze(dim=0).unsqueeze(dim=0) # B x D x H*W x 3
+
+        one_shape = list(Xw.shape)
+        one_shape[-1] = 1
+        ones_to_pad = torch.ones(one_shape)
+
+        X_cam = torch.cat((Xw, ones_to_pad), dim=3) # B x D x H*W x 4
+
+        X_cam = X_cam.transpose(1, 3) # B x 4 x H*W x D
+
+        X_cam = torch.reshape(X_cam, shape=(B, 4, H*W*D)) # B x 4 x H*W*D
+
+        X_cam_2 = torch.matmul(proj, X_cam)
+
+        X_cam_2 = torch.reshape(X_cam_2, shape=(B, 4, H*W, D)).transpose(1, 3) # B x D x H*W x 4
+
+        x_cam_2 = X_cam_2[:, :, :, 0:2]/X_cam_2[:, :, :, 2:3] # B x D x H*W x 2
+
+        # swap x, y position as H->y W->x
+        swap_index = torch.tensor([1, 0])
+        x_cam_2[:, :, :, swap_index] = x_cam_2
+
+        out_ = F.grid_sample(src_fea, x_cam_2) # B x C x D x H*W
+
+        warped_src_fea = out_.reshape(B, C, D, H, W)
+
+
 
     # get warped_src_fea with bilinear interpolation (use 'grid_sample' function from pytorch)
-    # TODO
-
+    # TODO  
+    
     return warped_src_fea
 
 def group_wise_correlation(ref_fea, warped_src_fea, G):
