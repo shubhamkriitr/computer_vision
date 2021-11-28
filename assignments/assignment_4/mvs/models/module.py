@@ -49,13 +49,52 @@ class FeatureNet(nn.Module):
 class SimlarityRegNet(nn.Module):
     def __init__(self, G):
         super(SimlarityRegNet, self).__init__()
-        # TODO
+        
+        self.conv_0 = nn.Conv2d(in_channels=G, out_channels=8,
+                kernel_size=(3, 3), stride=1, padding=(1, 1))
+        self.conv_1 = nn.Conv2d(in_channels=8, out_channels=16,
+                kernel_size=(3, 3), stride=2, padding=(1, 1))
+        self.conv_2 = nn.Conv2d(in_channels=16, out_channels=32,
+                kernel_size=(3, 3), stride=2, padding=(1, 1))
+        self.convt_0 = nn.ConvTranspose2d(in_channels=32, out_channels=16,
+                kernel_size=(3,3), stride=2)
+        self.convt_1 = nn.ConvTranspose2d(in_channels=16, out_channels=8,
+                kernel_size=(3,3), stride=2)
+        self.final_conv2d = nn.Conv2d(in_channels=8, out_channels=1,
+                kernel_size=(3, 3), stride=1, padding=(1, 1))
+        self.relu = nn.ReLU()
+
+
 
     def forward(self, x):
         # x: [B,G,D,H,W]
         # out: [B,D,H,W]
-        # TODO
-        pass
+        x_in = torch.transpose(x, 1, 2) # [B,D,G,H,W]
+        B,D,G,H,W = x_in.shape
+        x_in = torch.reshape(x_in, (B*D, G, H, W))
+        c_0 = self.conv_0(x_in)
+        c_0 = self.relu(c_0)
+
+        c_1 = self.conv_1(c_0)
+        c_1 = self.relu(c_1)
+
+        c_2 = self.conv_2(c_1)
+        c_2 = self.relu(c_2)
+
+        c_3 = self.convt_0(c_2)
+
+        c_1_3 = c_1 + c_3
+
+        c_4 = self.convt_1(c_1_3)
+
+        c_0_4 = c_0 + c_4
+
+        S_bar = self.final_conv2d(c_0_4) # B*D x 1 x H x W
+
+        out = torch.reshape(S_bar, (B, D, H, W))
+
+        return out
+
 
 
 def warping(src_fea, src_proj, ref_proj, depth_values):
@@ -162,3 +201,5 @@ def mvs_loss(depth_est, depth_gt, mask):
 if __name__ == "__main__":
     net = FeatureNet()
     print(net)
+    net2 = SimlarityRegNet(8)
+    print(net2)
