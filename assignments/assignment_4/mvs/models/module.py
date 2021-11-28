@@ -151,14 +151,15 @@ def warping(src_fea, src_proj, ref_proj, depth_values):
         swap_index = torch.tensor([1, 0])
         x_cam_2[:, :, :, swap_index] = x_cam_2
 
-        out_ = F.grid_sample(src_fea, x_cam_2, mode='bilinear') # B x C x D x H*W
+    # moved this out of no_grad context - grad need to be tracked
+    out_ = F.grid_sample(src_fea, x_cam_2, mode='bilinear') # B x C x D x H*W
 
-        warped_src_fea = out_.reshape(B, C, D, H, W)
+    warped_src_fea = out_.reshape(B, C, D, H, W)
 
 
 
     # get warped_src_fea with bilinear interpolation (use 'grid_sample' function from pytorch)
-    # TODO  
+    # TODO:A
     
     return warped_src_fea
 
