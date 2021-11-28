@@ -126,7 +126,23 @@ def group_wise_correlation(ref_fea, warped_src_fea, G):
     # warped_src_fea: [B,C,D,H,W]
     # out: [B,G,D,H,W]
     # TODO
-    pass
+    B, C, D, H, W = warped_src_fea.shape
+    k = int(C/G)
+
+    T = torch.reshape(ref_fea, (B, k, G, 1, H, W))
+    U = torch.reshape(warped_src_fea, (B, k, G, D, H, W))
+
+    out = T * U
+
+    out = torch.sum(out, dim=1)
+
+    out = out/k
+
+    return out
+
+
+
+
 
 
 def depth_regression(p, depth_values):
