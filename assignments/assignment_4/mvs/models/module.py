@@ -204,8 +204,8 @@ def mvs_loss(depth_est, depth_gt, mask):
     # TODO:A
     depth_est = mask * depth_est
     depth_gt = mask * depth_gt
-    cost_value = torch.nn.functional.l1_loss(depth_est, depth_gt, reduction="sum")
-    cost_value = cost_value/ torch.sum(mask)
+    cost_value = torch.nn.functional.l1_loss(depth_est, depth_gt, reduction="mean")
+    # cost_value = cost_value/ torch.sum(mask)
     return cost_value
 
 
