@@ -156,8 +156,12 @@ def warping(src_fea, src_proj, ref_proj, depth_values):
         swap_index = torch.tensor([1, 0])
         x_cam_2[:, :, :, swap_index] = x_cam_2
 
+        # Bring in -1 to 1 range
+        x_cam_2[:, :, :, 0] = (2*x_cam_2[:, :, :, 0] - W)/W
+        x_cam_2[:, :, :, 1] = (2*x_cam_2[:, :, :, 1] - H)/H
+
     # moved this out of no_grad context - grad need to be tracked
-    out_ = F.grid_sample(src_fea, x_cam_2, mode='bilinear') # B x C x D x H*W
+    out_ = F.grid_sample(src_fea, x_cam_2, mode='bilinear', padding_mode="zeros") # B x C x D x H*W
 
     warped_src_fea = out_.reshape(B, C, D, H, W)
 
