@@ -114,13 +114,18 @@ def warping(src_fea, src_proj, ref_proj, depth_values):
         proj = torch.matmul(src_proj, torch.inverse(ref_proj))
         rot = proj[:, :3, :3]  # [B,3,3]
         trans = proj[:, :3, 3:4]  # [B,3,1]
+
         y, x = torch.meshgrid([torch.arange(0, H, dtype=torch.float32, device=src_fea.device),
                                torch.arange(0, W, dtype=torch.float32, device=src_fea.device)])
         y, x = y.contiguous(), x.contiguous()
         y, x = y.view(H * W), x.view(H * W)
         
-        det_M_sign = torch.sign(torch.det(rot).unsqueeze(dim=1)) # B x 1
-        norm_m_3 = torch.norm(rot[:, 2, :], p=2, dim=1).unsqueeze(dim=1) # B x1
+
+        # M is from src_proj
+        # src_proj
+        M = src_proj[:, :3, :3]  # [B,3,3]
+        det_M_sign = torch.sign(torch.det(M).unsqueeze(dim=1)) # B x 1
+        norm_m_3 = torch.norm(M[:, 2, :], p=2, dim=1).unsqueeze(dim=1) # B x1
         w = det_M_sign*norm_m_3*depth_values # B x D
 
         # Create (x, y, 1)^T
@@ -214,3 +219,8 @@ if __name__ == "__main__":
     print(net)
     net2 = SimlarityRegNet(8)
     print(net2)
+    tp_1 = [(n, p) for n, p in net.named_parameters()]
+    tp_2 = [(n, p) for n, p in net2.named_parameters()]
+
+    print(tp_1)
+    print(tp_2)
