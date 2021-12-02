@@ -98,7 +98,6 @@ class SimlarityRegNet(nn.Module):
         return out
 
 
-
 def warping(src_fea, src_proj, ref_proj, depth_values):
     # src_fea: [B, C, H, W]
     # src_proj: [B, 4, 4]
@@ -123,10 +122,11 @@ def warping(src_fea, src_proj, ref_proj, depth_values):
 
         # M is from src_proj
         # src_proj
-        M = src_proj[:, :3, :3]  # [B,3,3]
+        M = ref_proj[:, :3, :3]  # [B,3,3]
         det_M_sign = torch.sign(torch.det(M).unsqueeze(dim=1)) # B x 1
         norm_m_3 = torch.norm(M[:, 2, :], p=2, dim=1).unsqueeze(dim=1) # B x1
         w = det_M_sign*norm_m_3*depth_values # B x D
+        # w = depth_values
 
         # Create (x, y, 1)^T
 
@@ -153,8 +153,8 @@ def warping(src_fea, src_proj, ref_proj, depth_values):
         x_cam_2 = X_cam_2[:, :, :, 0:2]/X_cam_2[:, :, :, 2:3] # B x D x H*W x 2
 
         # swap x, y position as H->y W->x
-        swap_index = torch.tensor([1, 0])
-        x_cam_2[:, :, :, swap_index] = x_cam_2
+        # swap_index = torch.tensor([1, 0]) - No need to swap it - grid sample expects x, y
+        # x_cam_2[:, :, :, swap_index] = x_cam_2
 
         # Bring in -1 to 1 range
         x_cam_2[:, :, :, 0] = (2*x_cam_2[:, :, :, 0] - W)/W
