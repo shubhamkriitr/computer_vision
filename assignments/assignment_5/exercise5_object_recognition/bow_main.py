@@ -43,9 +43,44 @@ def grid_points(img, nPointsX, nPointsY, border):
     """
     vPoints = None  # numpy array, [nPointsX*nPointsY, 2]
 
-    # todo
-    ...
+    # todo:A
+    if len(img.shape) > 2:
+        print("warning: Image array dim > 2")
+    h, w = img.shape[0], img.shape[1]
 
+    # Assuming w->x / h->y
+    w_offset = border
+    h_offset = border
+    w_end = w - border # exclusive
+    h_end = h - border
+
+    num_w_pts_within_border = w - 2*border
+    num_h_pts_within_border = h - 2*border
+
+    if num_h_pts_within_border < nPointsY:
+        print("warning: num_h_pts_within_border({}) < nPointsY({})".format(
+            num_h_pts_within_border, nPointsY
+        ))
+    if num_w_pts_within_border < nPointsX:
+        print("warning: num_w_pts_within_border({}) < nPointsX({})".format(
+            num_w_pts_within_border, nPointsX
+        ))
+
+    w_grid_step_size = num_w_pts_within_border/nPointsX
+    h_grid_step_size = num_h_pts_within_border/nPointsY
+
+    w_abscissa = np.arange(w_offset+w_grid_step_size/2.0, w_end + 1, w_grid_step_size)
+    h_ordinate = np.arange(h_offset+h_grid_step_size/2.0, h_end + 1, h_grid_step_size)
+
+    w_abscissa = w_abscissa[0:nPointsX]
+    h_ordinate = h_ordinate[0:nPointsY]
+
+    w_abscissa = np.rint(w_abscissa)
+    h_ordinate = np.rint(h_ordinate)
+
+    y, x = np.meshgrid(h_ordinate, w_abscissa)
+
+    vPoints = np.vstack([y.ravel(), x.ravel()]).T
 
     return vPoints
 
