@@ -178,7 +178,7 @@ def _get_descriptors_hog_for_one_patch_group(grad_magnitude, grad_drn, nBins, ce
             grad_magnitude_slice = grad_magnitude[current_grid[:,0], current_grid[:,1]]
             grad_drn_slice = grad_drn[current_grid[:,0], current_grid[:,1]]
 
-            curr_feature = np.histogram(
+            curr_feature, bins_created = np.histogram(
                 grad_drn_slice, bins=nBins, range=SCALED_ANGLE_RANGE, normed=None,
                  weights=grad_magnitude_slice, density=None)
             
@@ -314,8 +314,8 @@ if __name__ == '__main__':
     nameDirNeg_test = 'data/data_bow/cars-testing-neg'
 
 
-    k = None  # todo
-    numiter = None  # todo
+    k = 10  # todo:A
+    numiter = 100  # todo:A
 
     print('creating codebook ...')
     vCenters = create_codebook(nameDirPos_train, nameDirNeg_train, k, numiter)
