@@ -310,7 +310,10 @@ def bow_recognition_nearest(histogram,vBoWPos,vBoWNeg):
 
     # Find the nearest neighbor in the positive and negative sets and decide based on this neighbor
     # todo
-    ...
+
+    DistPos = np.min(np.linalg.norm(vBoWPos - histogram, ord=2, axis=1))
+    DistNeg = np.min(np.linalg.norm(vBoWNeg - histogram, ord=2, axis=1))
+    
 
     if (DistPos < DistNeg):
         sLabel = 1
