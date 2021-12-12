@@ -5,6 +5,16 @@ import os
 from sklearn.cluster import KMeans
 from tqdm import tqdm
 
+NUM_CELLS = (4, 4)  # from handout: section 2.1.2
+HALF_NUM_CELLS_H = NUM_CELLS[0]//2
+HALF_NUM_CELLS_W = NUM_CELLS[1]//2
+
+DATA_TYPE_INDEX = np.int32
+PI_RAD = 3.14159265
+THETA_MAX = PI_RAD
+TOLERANCE_NEAR_ZERO = THETA_MAX/(8*2 + 1.0)  # NBins = 8 k =2
+SCALED_ANGLE_RANGE = (0, (THETA_MAX-TOLERANCE_NEAR_ZERO)/THETA_MAX ) # it will be used to create bins
+
 
 def findnn(D1, D2):
     """
@@ -78,6 +88,9 @@ def grid_points(img, nPointsX, nPointsY, border):
     w_abscissa = np.rint(w_abscissa)
     h_ordinate = np.rint(h_ordinate)
 
+    w_abscissa = w_abscissa.astype(DATA_TYPE_INDEX)
+    h_ordinate = h_ordinate.astype(DATA_TYPE_INDEX)
+
     y, x = np.meshgrid(h_ordinate, w_abscissa)
 
     vPoints = np.vstack([y.ravel(), x.ravel()]).T
@@ -101,20 +114,79 @@ def descriptors_hog(img, vPoints, cellWidth, cellHeight):
     # grad_drn = np.arctan(grad_y/grad_x)
 
     grad_magnitude, grad_drn = cv2.cartToPolar(grad_x, grad_y, angleInDegrees=False)
+    grad_drn = _process_angle(grad_drn)
 
+    w_pixel_offset = HALF_NUM_CELLS_W*cellWidth
+    h_pixel_offset = HALF_NUM_CELLS_H*cellHeight
+
+    base_mesh_grid = _create_base_mesh_grid(cellHeight, cellWidth)
 
     descriptors = []  # list of descriptors for the current image, each entry is one 128-d vector for a grid point
     for i in range(len(vPoints)):
         # todo:A?
-        ...
+        h_center = vPoints[i][0]
+        w_center = vPoints[i][1]
+
+        h_base = h_center - h_pixel_offset
+        w_base = w_center - w_pixel_offset
+
+        current_descriptor = _get_descriptors_hog_for_one_patch_group(
+            grad_magnitude, grad_drn, nBins, cellWidth, cellHeight, base_mesh_grid, w_base, h_base)
+        
+        descriptors.append(current_descriptor)
 
 
     descriptors = np.asarray(descriptors) # [nPointsX*nPointsY, 128], descriptor for the current image (100 grid points)
     return descriptors
 
+def _process_angle(grad_drn):
 
-def get_descriptors_hog_for_one_patch_group(grad_magnitude, grad_drn, nBins, cellWidth, cellHeight, w_begin, h_begin):
-    np.histogram(grad_drn, bins=nBins, range=None, normed=None, weights=grad_magnitude, density=None)
+    # bring in 0 to pi range
+    grad_drn[grad_drn > PI_RAD] =  grad_drn[grad_drn > PI_RAD] - PI_RAD
+
+    condn = np.where(grad_drn > (PI_RAD - TOLERANCE_NEAR_ZERO))
+    grad_drn[condn] = 0
+
+    grad_drn = grad_drn/PI_RAD
+    grad_drn = np.clip(grad_drn, SCALED_ANGLE_RANGE[0], SCALED_ANGLE_RANGE[1])
+
+    return grad_drn 
+
+
+def _create_base_mesh_grid(num_pixels_h, num_pixels_w):
+    w_abscissa = np.arange(0, num_pixels_w, 1, dtype=np.int16)
+    h_ordinate = np.arange(0, num_pixels_h, 1, dtype=np.int16)
+    
+
+    y, x = np.meshgrid(h_ordinate, w_abscissa)
+
+    mesh_grid = np.vstack([y.ravel(), x.ravel()]).T
+    
+    return mesh_grid
+
+def _get_descriptors_hog_for_one_patch_group(grad_magnitude, grad_drn, nBins, cellWidth, cellHeight, base_mesh_grid, w_base, h_base):
+    features = []
+
+    for h_idx in range(NUM_CELLS[0]):
+        for w_idx in range(NUM_CELLS[1]):
+
+            w_begin = w_base + w_idx * cellWidth
+            h_begin = h_base + h_idx * cellHeight
+
+            current_grid = base_mesh_grid + np.array([h_begin, w_begin])
+
+            grad_magnitude_slice = grad_magnitude[current_grid[:,0], current_grid[:,1]]
+            grad_drn_slice = grad_drn[current_grid[:,0], current_grid[:,1]]
+
+            curr_feature = np.histogram(
+                grad_drn_slice, bins=nBins, range=SCALED_ANGLE_RANGE, normed=None,
+                 weights=grad_magnitude_slice, density=None)
+            
+            features.append(curr_feature)
+    
+    features = np.hstack(features)
+
+    return features
 
 
 def create_codebook(nameDirPos, nameDirNeg, k, numiter):
