@@ -94,9 +94,18 @@ def descriptors_hog(img, vPoints, cellWidth, cellHeight):
     grad_x = cv2.Sobel(img, cv2.CV_16S, dx=1, dy=0, ksize=1)
     grad_y = cv2.Sobel(img, cv2.CV_16S, dx=0, dy=1, ksize=1)
 
+    grad_x = grad_x.astype(np.float32)
+    grad_y = grad_y.astype(np.float32)
+
+    # grad_magnitude = np.sqrt(grad_x*grad_x + grad_y*grad_y)
+    # grad_drn = np.arctan(grad_y/grad_x)
+
+    grad_magnitude, grad_drn = cv2.cartToPolar(grad_x, grad_y, angleInDegrees=False)
+
+
     descriptors = []  # list of descriptors for the current image, each entry is one 128-d vector for a grid point
     for i in range(len(vPoints)):
-        # todo
+        # todo:A?
         ...
 
 
@@ -104,6 +113,8 @@ def descriptors_hog(img, vPoints, cellWidth, cellHeight):
     return descriptors
 
 
+def get_descriptors_hog_for_one_patch_group(grad_magnitude, grad_drn, nBins, cellWidth, cellHeight, w_begin, h_begin):
+    np.histogram(grad_drn, bins=nBins, range=None, normed=None, weights=grad_magnitude, density=None)
 
 
 def create_codebook(nameDirPos, nameDirNeg, k, numiter):
@@ -133,8 +144,11 @@ def create_codebook(nameDirPos, nameDirNeg, k, numiter):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # [h, w]
 
         # Collect local feature points for each image, and compute a descriptor for each local feature point
-        # todo
-        ...
+        # todo:A?
+        grid_vPoints = grid_points(img, nPointsX, nPointsY, border)
+        current_image_features = descriptors_hog(img, grid_vPoints, cellWidth, cellHeight)
+
+        vFeatures.append(current_image_features)
 
 
     vFeatures = np.asarray(vFeatures)  # [n_imgs, n_vPoints, 128]
