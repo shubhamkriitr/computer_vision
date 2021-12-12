@@ -243,9 +243,21 @@ def bow_histogram(vFeatures, vCenters):
     """
     histo = None
 
-    # todo
-    ...
-
+    # todo:A
+    dist_matrix = []
+    num_centers = vCenters.shape[0]
+    for idx in range(num_centers):
+        diff = vFeatures - vCenters[idx]
+        distance = np.linalg.norm(diff, ord=2, axis=1)
+        dist_matrix.append(distance)
+    
+    dist_matrix = np.vstack(dist_matrix)
+    dist_argmin = np.argmin(dist_matrix, axis=0)
+    # print(dist_matrix)
+    # print(dist_argmin)
+    histo, bins_created = np.histogram(dist_argmin, bins=num_centers, range=(0, num_centers), normed=None,
+                 weights=None, density=None)
+        
     return histo
 
 
@@ -274,8 +286,11 @@ def create_bow_histograms(nameDir, vCenters):
         img = cv2.imread(vImgNames[i])  # [172, 208, 3]
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # [h, w]
 
-        # todo
-        ...
+        # todo:A
+        grid_vPoints = grid_points(img, nPointsX, nPointsY, border)
+        current_image_features = descriptors_hog(img, grid_vPoints, cellWidth, cellHeight)
+        current_bow_histogram = bow_histogram(current_image_features, vCenters)
+        vBoW.append(current_bow_histogram)
 
 
     vBoW = np.asarray(vBoW)  # [n_imgs, k]
