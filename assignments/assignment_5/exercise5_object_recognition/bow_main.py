@@ -331,9 +331,14 @@ if __name__ == '__main__':
     nameDirPos_test = 'data/data_bow/cars-testing-pos'
     nameDirNeg_test = 'data/data_bow/cars-testing-neg'
 
-
-    k = 10  # todo:A
-    numiter = 100  # todo:A
+    # fix seed for reproducibility
+    np.random.seed(0)
+    cv2.setRNGSeed(0)
+    
+    k = 5  # todo:A
+    numiter = 40  # todo:A
+    print("="*80)
+    print("Using k={} and numiter={}".format(k, numiter))
 
     print('creating codebook ...')
     vCenters = create_codebook(nameDirPos_train, nameDirNeg_train, k, numiter)
