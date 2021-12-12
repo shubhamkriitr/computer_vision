@@ -94,6 +94,17 @@ class Vgg(nn.Module):
         """
         score = None
         # todo
+        out_ = self.conv_block1(x)
+        out_ = self.conv_block2(out_)
+        out_ = self.conv_block3(out_)
+        out_ = self.conv_block4(out_)
+        out_ = self.conv_block5(out_)
+
+        # reshape # drop last two dimensions
+        out_ = torch.squeeze(out_, 2)
+        out_ = torch.squeeze(out_, 2)
+
+        score = self.classifier(out_)
         
 
         return score
