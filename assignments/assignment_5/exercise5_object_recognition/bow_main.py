@@ -11,9 +11,9 @@ HALF_NUM_CELLS_W = NUM_CELLS[1]//2
 
 DATA_TYPE_INDEX = np.int32
 PI_RAD = 3.14159265
-THETA_MAX = PI_RAD
-TOLERANCE_NEAR_ZERO = THETA_MAX/(8*2 + 1.0)  # NBins = 8 k =2
-SCALED_ANGLE_RANGE = (0, (THETA_MAX-TOLERANCE_NEAR_ZERO)/THETA_MAX ) # it will be used to create bins
+THETA_MAX = 2*PI_RAD
+TOLERANCE_NEAR_ZERO = THETA_MAX/(8*2) # NBins = 8 k =2
+SCALED_ANGLE_RANGE = (0, 2*PI_RAD) # it will be used to create bins
 
 
 def findnn(D1, D2):
@@ -139,7 +139,7 @@ def descriptors_hog(img, vPoints, cellWidth, cellHeight):
     descriptors = np.asarray(descriptors) # [nPointsX*nPointsY, 128], descriptor for the current image (100 grid points)
     return descriptors
 
-def _process_angle(grad_drn):
+def _process_angle_old(grad_drn):
 
     # bring in 0 to pi range
     grad_drn[grad_drn > PI_RAD] =  grad_drn[grad_drn > PI_RAD] - PI_RAD
@@ -152,6 +152,24 @@ def _process_angle(grad_drn):
 
     return grad_drn 
 
+def _process_angle(grad_drn):
+
+    
+    grad_drn = grad_drn - TOLERANCE_NEAR_ZERO/2.0
+    condn = np.where(grad_drn < 0)
+    grad_drn[condn] = 2*PI_RAD + grad_drn[condn]
+
+    # grad_drn = grad_drn/(2*PI_RAD)
+    grad_drn = np.clip(grad_drn, SCALED_ANGLE_RANGE[0], SCALED_ANGLE_RANGE[1])
+
+    return grad_drn 
+
+def _process_angle_3(grad_drn):
+
+    
+    grad_drn = np.clip(grad_drn, SCALED_ANGLE_RANGE[0], SCALED_ANGLE_RANGE[1])
+
+    return grad_drn 
 
 def _create_base_mesh_grid(num_pixels_h, num_pixels_w):
     w_abscissa = np.arange(0, num_pixels_w, 1, dtype=np.int16)
@@ -335,8 +353,9 @@ if __name__ == '__main__':
     np.random.seed(0)
     cv2.setRNGSeed(0)
     
-    k = 5  # todo:A
-    numiter = 40  # todo:A
+    import sys
+    k = int(sys.argv[1])  # todo:A
+    numiter = int(sys.argv[2])  # todo:A
     print("="*80)
     print("Using k={} and numiter={}".format(k, numiter))
 
