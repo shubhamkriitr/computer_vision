@@ -354,8 +354,8 @@ if __name__ == '__main__':
     cv2.setRNGSeed(0)
     
     import sys
-    k = int(sys.argv[1])  # todo:A
-    numiter = int(sys.argv[2])  # todo:A
+    k = 6  # todo:A
+    numiter = 40  # todo:A
     print("="*80)
     print("Using k={} and numiter={}".format(k, numiter))
 
