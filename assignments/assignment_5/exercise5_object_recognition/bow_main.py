@@ -198,7 +198,7 @@ def _get_descriptors_hog_for_one_patch_group(grad_magnitude, grad_drn, nBins, ce
 
             curr_feature, bins_created = np.histogram(
                 grad_drn_slice, bins=nBins, range=SCALED_ANGLE_RANGE, normed=None,
-                 weights=grad_magnitude_slice, density=None)
+                 weights=None, density=None)
             
             features.append(curr_feature)
     
@@ -355,7 +355,7 @@ if __name__ == '__main__':
     
     import sys
     k = 6  # todo:A
-    numiter = 40  # todo:A
+    numiter = 8  # todo:A
     print("="*80)
     print("Using k={} and numiter={}".format(k, numiter))
 
