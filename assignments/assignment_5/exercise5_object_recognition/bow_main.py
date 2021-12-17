@@ -154,13 +154,7 @@ def _process_angle_old(grad_drn):
 
 def _process_angle(grad_drn):
 
-    
-    grad_drn = grad_drn - TOLERANCE_NEAR_ZERO/2.0
-    condn = np.where(grad_drn < 0)
-    grad_drn[condn] = 2*PI_RAD + grad_drn[condn]
-
-    # grad_drn = grad_drn/(2*PI_RAD)
-    grad_drn = np.clip(grad_drn, SCALED_ANGLE_RANGE[0], SCALED_ANGLE_RANGE[1])
+    # No extra value shift to do
 
     return grad_drn 
 
@@ -354,7 +348,7 @@ if __name__ == '__main__':
     cv2.setRNGSeed(0)
     
     import sys
-    k = 6  # todo:A
+    k = 7  # todo:A
     numiter = 8  # todo:A
     print("="*80)
     print("Using k={} and numiter={}".format(k, numiter))
