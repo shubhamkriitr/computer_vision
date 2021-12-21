@@ -205,7 +205,7 @@ def condensation_tracker(video_path, params):
         # =====================================
 
         if params["draw_plots"] and t != last_frame:
-            
+            FIG_SAVE_UTIL.save_1(plt)
             plt.pause(0.2)
             # Remove previous element from plot
             for e in to_remove:
@@ -213,6 +213,23 @@ def condensation_tracker(video_path, params):
 
     plt.ioff()
     plt.show()
+
+class FigSaveUtil:
+    def __init__(self) -> None:
+        import time
+        self.root_path = "./output_{}".format(int(time.time()))
+        os.makedirs(self.root_path, exist_ok=False)
+        self.ctr_1 = 0
+        self.ctr_2 = 0
+    
+    def save_1(self, plt):
+        self.ctr_1 += 1
+        fpath = os.path.join(self.root_path, "pic_{}.png".format(self.ctr_1))
+        plt.savefig(fpath)
+
+
+FIG_SAVE_UTIL = FigSaveUtil()
+
 
 
 if __name__ == "__main__":
