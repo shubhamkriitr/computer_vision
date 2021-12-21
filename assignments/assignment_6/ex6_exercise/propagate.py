@@ -63,8 +63,8 @@ def clip_values(particles, frame_height, frame_width):
     x_max = frame_width
     y_max = frame_height
 
-    x_idx = 1
-    y_idx = 0
+    x_idx = 0
+    y_idx = 1
     
     particles[:, x_idx] = np.clip(particles[:, x_idx], a_min=x_min, a_max=x_max)
 
