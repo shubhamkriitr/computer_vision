@@ -210,39 +210,62 @@ def condensation_tracker(video_path, params):
             # Remove previous element from plot
             for e in to_remove:
                 e.remove()
-
+    FIG_SAVE_UTIL.save_1(plt)
     plt.ioff()
     plt.show()
 
 class FigSaveUtil:
-    def __init__(self) -> None:
+    def __init__(self, msg="", tag="vid") -> None:
         import time
-        self.root_path = "./output_{}".format(int(time.time()))
+        self.msg = msg
+        self.tag = tag
+        self.root_path = "output_{}_{}".format(self.msg, int(time.time()))
         os.makedirs(self.root_path, exist_ok=False)
         self.ctr_1 = 0
         self.ctr_2 = 0
     
     def save_1(self, plt):
         self.ctr_1 += 1
-        fpath = os.path.join(self.root_path, "pic_{}.png".format(self.ctr_1))
+        fpath = os.path.join(self.root_path, "{}_pic_{}.png".format(self.tag, self.ctr_1))
         plt.savefig(fpath)
 
+    def save_params(self, params):
+        import json
+        fpath = os.path.join(self.root_path, "params.json")
+        with open(fpath, "w") as f:
+            json.dump(params, f, indent=4)
+        
 
-FIG_SAVE_UTIL = FigSaveUtil()
+
+FIG_SAVE_UTIL = None
 
 
 
 if __name__ == "__main__":
     video_name = 'video3.avi'
+    msg = ""
+    tag = ""
+    try:
+        import sys
+        video_name = sys.argv[1]
+        msg = sys.argv[2]
+        tag = sys.argv[3]
+    except Exception as exc:
+        pass
+    print("Vid:[{}], msg:[{}], tag:[{}]".format(
+        video_name, msg, tag
+    ))
+    FIG_SAVE_UTIL = FigSaveUtil(msg=msg, tag=tag)
     params = {
         "draw_plots": 1,
         "hist_bin": 16,
         "alpha": 0,
         "sigma_observe": 0.1,
         "model": 0,
-        "num_particles": 300,
+        "num_particles": 1000,
         "sigma_position": 15,
         "sigma_velocity": 1,
         "initial_velocity": (1, 10)
     }
     condensation_tracker(video_name, params)
+    FIG_SAVE_UTIL.save_params(params)
