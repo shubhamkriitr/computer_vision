@@ -234,8 +234,8 @@ class FigSaveUtil:
 
     def save_params(self, params):
         import json
-        fpath = os.path.join(self.root_path, "params.json")
-        fpath2 = os.path.join(self.root_path, "params_latex.txt")
+        fpath = os.path.join(self.root_path, "{}_params.json".format(self.tag))
+        fpath2 = os.path.join(self.root_path, "{}_params_latex.txt".format(self.tag))
         with open(fpath, "w") as f:
             json.dump(params, f, indent=4)
         with open(fpath2, "w") as f:
@@ -301,7 +301,7 @@ if __name__ == "__main__":
         "hist_bin": 16,
         "alpha": 0.1,
         "sigma_observe": 0.1,
-        "model": 1,
+        "model": 0,
         "num_particles": 300,
         "sigma_position": 15,
         "sigma_velocity": 1,
