@@ -270,7 +270,7 @@ class FigSaveUtil:
         for c in chunks:
             delta = " & {}".format(c)
             latex_snippet = latex_snippet + delta
-        latex_snippet += r" \\"
+        latex_snippet += r" \\ \hline"
 
         
 
