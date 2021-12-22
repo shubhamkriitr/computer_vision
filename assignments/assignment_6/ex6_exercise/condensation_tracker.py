@@ -11,6 +11,7 @@ from observe import observe
 from resample import resample
 from estimate import estimate
 
+from PIL import Image
 
 top_left = []
 bottom_right = []
@@ -57,7 +58,7 @@ def condensation_tracker(video_path, params):
         last_frame = 42
     elif video_name == "video2.avi":
         first_frame = 3
-        last_frame = 40
+        last_frame = 39
     elif video_name == "video3.avi":
         first_frame = 1
         last_frame = 60
@@ -223,10 +224,12 @@ class FigSaveUtil:
         os.makedirs(self.root_path, exist_ok=False)
         self.ctr_1 = 0
         self.ctr_2 = 0
+        self.images_1 = []
     
     def save_1(self, plt):
         self.ctr_1 += 1
         fpath = os.path.join(self.root_path, "{}_pic_{}.png".format(self.tag, self.ctr_1))
+        self.images_1.append(fpath)
         plt.savefig(fpath)
 
     def save_params(self, params):
@@ -234,6 +237,12 @@ class FigSaveUtil:
         fpath = os.path.join(self.root_path, "params.json")
         with open(fpath, "w") as f:
             json.dump(params, f, indent=4)
+    
+    def create_gif(self):
+        fpath = os.path.join(self.root_path, "{}_pic.gif".format(self.tag))
+        img, *imgs = [Image.open(f) for f in self.images_1]
+        img.save(fp=fpath, format='GIF', append_images=imgs,
+                save_all=True, duration=200, loop=0)
         
 
 
@@ -259,10 +268,10 @@ if __name__ == "__main__":
     params = {
         "draw_plots": 1,
         "hist_bin": 16,
-        "alpha": 0,
+        "alpha": 0.1,
         "sigma_observe": 0.1,
         "model": 0,
-        "num_particles": 1000,
+        "num_particles": 300,
         "sigma_position": 15,
         "sigma_velocity": 1,
         "initial_velocity": (1, 10)
