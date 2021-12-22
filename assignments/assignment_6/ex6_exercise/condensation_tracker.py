@@ -235,15 +235,46 @@ class FigSaveUtil:
     def save_params(self, params):
         import json
         fpath = os.path.join(self.root_path, "params.json")
+        fpath2 = os.path.join(self.root_path, "params_latex.txt")
         with open(fpath, "w") as f:
             json.dump(params, f, indent=4)
+        with open(fpath2, "w") as f:
+            snippet = self.get_latex_snippet(params=params)
+            f.write(snippet)
     
     def create_gif(self):
         fpath = os.path.join(self.root_path, "{}_pic.gif".format(self.tag))
         img, *imgs = [Image.open(f) for f in self.images_1]
         img.save(fp=fpath, format='GIF', append_images=imgs,
                 save_all=True, duration=200, loop=0)
+
+    def get_latex_snippet(self, params):
         
+        chunks = []
+        model_map = {0: "$M_{No Motion}$", 1: "$M_{Const Velocity}$"}
+        chunks.append(params["hist_bin"])
+        chunks.append(model_map[params["model"]])
+        chunks.append(params["alpha"])
+        chunks.append(params["num_particles"])
+        chunks.append(params["sigma_position"])
+        if params["model"] == 0:
+            chunks.append("-")
+            chunks.append("-")
+        else:
+            chunks.append(params["sigma_velocity"])
+            chunks.append(list(params["initial_velocity"]))
+        chunks.append(params["sigma_observe"])
+        
+        latex_snippet = ""
+
+        for c in chunks:
+            delta = " & {}".format(c)
+            latex_snippet = latex_snippet + delta
+        latex_snippet += r" \\"
+
+        
+
+        return latex_snippet
 
 
 FIG_SAVE_UTIL = None
@@ -270,7 +301,7 @@ if __name__ == "__main__":
         "hist_bin": 16,
         "alpha": 0.1,
         "sigma_observe": 0.1,
-        "model": 0,
+        "model": 1,
         "num_particles": 300,
         "sigma_position": 15,
         "sigma_velocity": 1,
@@ -278,3 +309,4 @@ if __name__ == "__main__":
     }
     condensation_tracker(video_name, params)
     FIG_SAVE_UTIL.save_params(params)
+    FIG_SAVE_UTIL.create_gif()
