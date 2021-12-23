@@ -57,7 +57,7 @@ def condensation_tracker(video_path, params):
         last_frame = 42
     elif video_name == "video2.avi":
         first_frame = 3
-        last_frame = 40
+        last_frame = 38
     elif video_name == "video3.avi":
         first_frame = 1
         last_frame = 60
