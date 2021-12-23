@@ -30,6 +30,9 @@ def compute_particle_weights(particles_hist, target_hist, sigma_observe):
     dnr = np.sqrt(2*np.pi)*sigma_observe
     particles_w = np.exp(-(chi_sqr_dist*chi_sqr_dist)/(2*sigma_observe*sigma_observe))/dnr
 
+    if np.sum(particles_w) < 1e-5:
+        particles_w = np.ones_like(particles_w)
+
     particles_w = particles_w/np.sum(particles_w) # Normalize this PD
 
     return particles_w
