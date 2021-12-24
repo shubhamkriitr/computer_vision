@@ -220,12 +220,12 @@ if __name__ == "__main__":
     params = {
         "draw_plots": 1,
         "hist_bin": 16,
-        "alpha": 0,
+        "alpha": 0.1,
         "sigma_observe": 0.1,
-        "model": 0,
-        "num_particles": 300,
-        "sigma_position": 15,
+        "model": 1,
+        "num_particles": 200,
+        "sigma_position": 10,
         "sigma_velocity": 1,
-        "initial_velocity": (1, 10)
+        "initial_velocity": (1, 0)
     }
     condensation_tracker(video_name, params)
